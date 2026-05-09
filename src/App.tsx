@@ -10,12 +10,12 @@ import { StatusBar } from '@capacitor/status-bar';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { AddTransactionModal } from './components/AddTransactionModal';
+import { AddTransactionPage } from './pages/AddTransactionPage';
 
 import logo from './assets/logo.png';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'landing' | 'login' | 'register' | 'app'>('landing');
+  const [view, setView] = useState<'landing' | 'login' | 'register' | 'add-transaction' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
   const [user, setUser] = useState<any>(null);
   const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
@@ -94,7 +94,19 @@ const App: React.FC = () => {
     );
   }
 
-  const renderPage = () => {
+  if (view === 'add-transaction') {
+    return (
+      <AddTransactionPage 
+        onBack={() => setView('app')} 
+        onSuccess={() => {
+          const token = localStorage.getItem('token');
+          if (token) fetchSummary(token);
+          setView('app');
+          setActiveTab('home');
+        }} 
+      />
+    );
+  }
     switch (activeTab) {
       case 'home':
         return <TransactionList showHeading={false} />;
@@ -196,22 +208,11 @@ const App: React.FC = () => {
         activeTab={activeTab} 
         onTabChange={(tab) => {
           if (tab === 'add') {
-            setIsAddModalOpen(true);
+            setView('add-transaction');
           } else {
             setActiveTab(tab);
           }
         }} 
-      />
-
-      <AddTransactionModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          const token = localStorage.getItem('token');
-          if (token) fetchSummary(token);
-          // Refresh current page if it's transaction list
-          setActiveTab('home');
-        }}
       />
     </div>
   );
