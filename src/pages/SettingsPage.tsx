@@ -39,7 +39,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 pb-32">
+    <div className="p-6 pt-12 pb-32">
       <h2 className="text-xl font-bold font-heading text-slate-900 mb-6">Settings</h2>
       
       <div className="space-y-4">

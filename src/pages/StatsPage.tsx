@@ -13,7 +13,7 @@ const data = [
 
 export const StatsPage: React.FC = () => {
   return (
-    <div className="p-6">
+    <div className="p-6 pt-12">
       <h2 className="text-xl font-bold font-heading text-slate-900 mb-6">Financial Stats</h2>
       
       <div className="glass p-4 rounded-3xl mb-6 h-64">
