@@ -85,9 +85,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 pt-6 pb-32">
-      <h2 className="text-xl font-bold font-heading text-slate-900 mb-6">Settings</h2>
-      
+    <div className="p-6 pt-4 pb-32">
       <div className="space-y-4">
         {/* Update Card */}
         <div className="w-full bg-emerald-50 border border-emerald-100 p-4 rounded-3xl overflow-hidden relative">

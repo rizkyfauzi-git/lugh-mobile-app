@@ -14,7 +14,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Show status bar for standard experience and to prevent layout jumps
-    StatusBar.show().catch(() => {});
+    StatusBar.show().catch(() => { });
   }, []);
 
   const renderPage = () => {
@@ -33,13 +33,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-slate-50 overflow-hidden flex flex-col safe-top mt-[10px]">
+    <div className="h-screen bg-slate-50 overflow-hidden flex flex-col safe-top mt-[30px]">
       {/* Fixed Top Section */}
-      <div className="flex-none bg-white">
+      <div className="flex-none bg-white border-b border-slate-100 shadow-sm">
         {activeTab === 'home' && (
           <>
             {/* Header - Only on Home */}
-            <header className="px-6 pt-4 pb-4 flex justify-between items-center border-b border-slate-100 shadow-sm">
+            <header className="px-6 pt-4 pb-4 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-emerald-100 border border-emerald-50">
                   <img src={logo} alt="Lugh Finance Logo" className="w-full h-full object-cover" />
@@ -50,23 +50,53 @@ const App: React.FC = () => {
               </div>
               <div className="flex gap-2">
                 <div className="px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
-                   <span className="text-[10px] font-bold text-emerald-700">System Live</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                  <span className="text-[10px] font-bold text-emerald-700">System Live</span>
                 </div>
               </div>
             </header>
 
-            <div className="px-6 py-4">
-              {/* Balance Card - Non-scrollable */}
+            <div className="px-6 pb-4">
               <SummaryCard type="balance" amount={12450000} label="Current Balance" />
-              
-              {/* Recent Activity Heading - Non-scrollable */}
-              <div className="flex justify-between items-center mt-6 mb-2">
+              <div className="flex justify-between items-center mt-6">
                 <h2 className="text-lg font-bold font-heading text-slate-800">Recent Activity</h2>
                 <button className="text-sm font-semibold text-primary" onClick={() => setActiveTab('history')}>See All</button>
               </div>
             </div>
           </>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="px-6 pt-6 pb-4">
+            <h2 className="text-xl font-bold font-heading text-slate-900 mb-4">Transaction History</h2>
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {['All', 'Revenue', 'Inventory', 'Bills', 'Wages'].map((filter) => (
+                <button 
+                  key={filter}
+                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap ${
+                    filter === 'All' ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 border border-slate-100'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="px-6 pt-6 pb-4">
+            <h2 className="text-xl font-bold font-heading text-slate-900 mb-4">Settings</h2>
+            {/* The Check Update functionality is inside SettingsPage, 
+                so we'll keep the update card there for logic simplicity or move it here. 
+                Let's move the heading only for now to test the "Fixed" feel. */}
+          </div>
+        )}
+
+        {activeTab === 'stats' && (
+          <div className="px-6 pt-6 pb-4">
+            <h2 className="text-xl font-bold font-heading text-slate-900">Financial Stats</h2>
+          </div>
         )}
       </div>
 
