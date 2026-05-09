@@ -10,12 +10,14 @@ import { StatusBar } from '@capacitor/status-bar';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { useQuery } from '@tanstack/react-query';
+import { AddTransactionPage } from './pages/AddTransactionPage';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchProfile, fetchSummary, fetchTransactions } from './services/api';
 
 import logo from './assets/logo.png';
 
 const App: React.FC = () => {
+  const queryClient = useQueryClient();
   const [view, setView] = useState<'landing' | 'login' | 'register' | 'add-transaction' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
   const [historyCategories, setHistoryCategories] = useState<string[]>(['All']);
@@ -94,8 +96,6 @@ const App: React.FC = () => {
       <AddTransactionPage 
         onBack={() => setView('app')} 
         onSuccess={() => {
-          const token = localStorage.getItem('token');
-          if (token) fetchSummary(token);
           setView('app');
           setActiveTab('home');
         }} 
@@ -116,7 +116,7 @@ const App: React.FC = () => {
           <SettingsPage 
             onLogout={() => {
               localStorage.removeItem('token');
-              setUser(null);
+              queryClient.clear();
               setView('login');
             }} 
           />
