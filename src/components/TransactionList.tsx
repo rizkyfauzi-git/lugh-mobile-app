@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ShoppingBag, Utensils, Zap, TrendingUp, TrendingDown, FileText, X, Clock, Wallet, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { fetchTransactions } from '../services/api';
 
 interface Transaction {
   id: number;
@@ -24,41 +26,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   isClickable = false,
   filterCategory = 'All'
 }) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  useEffect(() => {
-// ... existing fetch ...
-    const fetchTransactions = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/transactions', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          let data = await response.json();
-          
-          // Filter berdasarkan kategori yang dipilih
-          if (filterCategory !== 'All') {
-            data = data.filter((tx: any) => {
-              const txCat = tx.category_name || (tx.type === 'income' ? 'Penjualan' : 'Operasional');
-              return txCat === filterCategory;
-            });
-          }
-
-          if (limit) data = data.slice(0, limit);
-          setTransactions(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch transactions', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
-  }, [limit]);
+  const { data: allTransactions = [], isLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: () => fetchTransactions(),
+  });
 
   const getIcon = (type: string, description: string) => {
     if (type === 'income') return { icon: Utensils, color: 'bg-emerald-100 text-emerald-600' };
@@ -69,7 +42,17 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     return { icon: FileText, color: 'bg-slate-100 text-slate-600' };
   };
 
-  if (loading) {
+  // Filter logic
+  let transactions = [...allTransactions];
+  if (filterCategory !== 'All') {
+    transactions = transactions.filter((tx: any) => {
+      const txCat = tx.category_name || (tx.type === 'income' ? 'Penjualan' : 'Operasional');
+      return txCat === filterCategory;
+    });
+  }
+  if (limit) transactions = transactions.slice(0, limit);
+
+  if (isLoading) {
     return (
       <div className="py-10 text-center text-slate-400 font-medium animate-pulse">
         Memuat data transaksi...
@@ -96,7 +79,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             const { icon: Icon, color } = getIcon(tx.type, tx.description);
             const date = new Date(tx.date);
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            
             const ItemWrapper = isClickable ? 'button' : 'div';
             
             return (
@@ -131,25 +113,20 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         )}
       </div>
 
-      {/* Transaction Detail Modal */}
       <AnimatePresence>
         {selectedTx && (
           <>
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedTx(null)}
               className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100]"
             />
             <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] p-8 z-[101] shadow-2xl"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black font-heading text-slate-900">Transaction Detail</h3>
+                <h3 className="text-xl font-black font-heading text-slate-900">Detail Transaksi</h3>
                 <button onClick={() => setSelectedTx(null)} className="p-2 rounded-xl bg-slate-50 text-slate-400">
                   <X size={20} />
                 </button>
@@ -169,27 +146,25 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                   <div className="flex items-center gap-3">
                     <Clock size={18} className="text-slate-400" />
-                    <span className="text-xs font-bold text-slate-500">Time & Date</span>
+                    <span className="text-xs font-bold text-slate-500">Waktu & Tanggal</span>
                   </div>
                   <span className="text-xs font-black text-slate-900">
                     {new Date(selectedTx.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
                   </span>
                 </div>
-
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                   <div className="flex items-center gap-3">
                     <Tag size={18} className="text-slate-400" />
-                    <span className="text-xs font-bold text-slate-500">Category</span>
+                    <span className="text-xs font-bold text-slate-500">Kategori</span>
                   </div>
                   <span className="text-xs font-black text-slate-900">
                     {selectedTx.category_name || (selectedTx.type === 'income' ? 'Penjualan' : 'Operasional')}
                   </span>
                 </div>
-
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                   <div className="flex items-center gap-3">
                     <Wallet size={18} className="text-slate-400" />
-                    <span className="text-xs font-bold text-slate-500">Payment Method</span>
+                    <span className="text-xs font-bold text-slate-500">Metode</span>
                   </div>
                   <span className="text-xs font-black text-slate-900 uppercase">Cash</span>
                 </div>
@@ -199,7 +174,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                 onClick={() => setSelectedTx(null)}
                 className="w-full mt-8 py-5 rounded-[2rem] bg-slate-900 text-white font-bold text-sm shadow-xl active:scale-95 transition-transform"
               >
-                Close Details
+                Tutup Detail
               </button>
             </motion.div>
           </>

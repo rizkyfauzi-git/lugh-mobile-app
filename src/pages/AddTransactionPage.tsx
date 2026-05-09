@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Wallet, Tag, AlignLeft, ArrowLeft, PlusCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchCategories, fetchWallets } from '../services/api';
 
 interface AddTransactionPageProps {
   onBack: () => void;
@@ -8,74 +10,81 @@ interface AddTransactionPageProps {
 }
 
 export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, onSuccess }) => {
+  const queryClient = useQueryClient();
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState<number>(0);
   const [walletId, setWalletId] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
   
-  const [categories, setCategories] = useState<any[]>([]);
-  const [wallets, setWallets] = useState<any[]>([]);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
+  // Fetch Categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+  });
+
+  // Fetch Wallets
+  const { data: allWallets = [] } = useQuery({
+    queryKey: ['wallets'],
+    queryFn: fetchWallets,
+  });
+
+  const wallets = allWallets.filter((w: any) => 
+    w.name.toLowerCase() === 'cash' || w.name.toLowerCase() === 'qris'
+  ).sort((a: any, b: any) => a.name.localeCompare(b.name));
+
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      const [catRes, wallRes] = await Promise.all([
-        fetch('https://lugh-mobile-backend-v1.vercel.app/api/categories', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('https://lugh-mobile-backend-v1.vercel.app/api/wallets', { headers: { 'Authorization': `Bearer ${token}` } })
-      ]);
-      
-      if (catRes.ok) setCategories(await catRes.json());
-      if (wallRes.ok) {
-        const allWallets = await wallRes.json();
-        
-        // Pastikan urutan Cash dulu baru QRIS (atau sebaliknya) agar rapi
-        const prioritized = allWallets.filter((w: any) => 
-          w.name.toLowerCase() === 'cash' || w.name.toLowerCase() === 'qris'
-        ).sort((a: any, b: any) => a.name.localeCompare(b.name));
-        
-        // Jika karena alasan tertentu (user lama) belum ada Cash/QRIS, tampilkan semua
-        const finalWallets = prioritized.length > 0 ? prioritized : allWallets;
-        setWallets(finalWallets);
-        
-        if (finalWallets.length > 0) {
-          setWalletId(finalWallets[0].id);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch data', err);
+    if (wallets.length > 0 && walletId === 0) {
+      setWalletId(wallets[0].id);
     }
-  };
+  }, [wallets, walletId]);
 
-  const handleAddCategory = async () => {
-    if (!newCategoryName) return;
-    const token = localStorage.getItem('token');
-    try {
+  const addTransactionMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/transactions', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error('Failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      onSuccess();
+    }
+  });
+
+  const addCategoryMutation = useMutation({
+    mutationFn: async (payload: any) => {
       const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/categories', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ name: newCategoryName, type, icon: 'tag' })
+        body: JSON.stringify(payload)
       });
-      if (response.ok) {
-        const newCat = await response.json();
-        setCategories([...categories, newCat]);
-        setCategoryId(newCat.id);
-        setIsAddingCategory(false);
-        setNewCategoryName('');
-      }
-    } catch (err) {
-      alert('Gagal menambah kategori');
+      if (!response.ok) throw new Error('Failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setIsAddingCategory(false);
+      setNewCategoryName('');
     }
+  });
+
+  const handleAddCategory = () => {
+    if (!newCategoryName) return;
+    addCategoryMutation.mutate({ name: newCategoryName, type, icon: 'tag' });
   };
 
   const formatNumber = (val: string) => {
@@ -88,39 +97,16 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
     return val.replace(/\D/g, '');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/transactions', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          amount: parseInt(parseNumber(amount)),
-          type,
-// ... rest of the code ...
-          description,
-          category_id: categoryId || (categories.find(c => c.type === type)?.id || 1),
-          wallet_id: walletId || (wallets[0]?.id || 1),
-          date: new Date().toISOString()
-        })
-      });
-
-      if (response.ok) {
-        onSuccess();
-      } else {
-        alert('Gagal mencatat transaksi.');
-      }
-    } catch (err) {
-      alert('Koneksi bermasalah.');
-    } finally {
-      setLoading(false);
-    }
+    addTransactionMutation.mutate({
+      amount: parseInt(parseNumber(amount)),
+      type,
+      description,
+      category_id: categoryId || (categories.find((c: any) => c.type === type)?.id || 1),
+      wallet_id: walletId || (wallets[0]?.id || 1),
+      date: new Date().toISOString()
+    });
   };
 
   return (
@@ -201,7 +187,7 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
                 onClick={handleAddCategory}
                 className="bg-primary text-white px-6 rounded-2xl font-bold text-sm"
               >
-                Simpan
+                {addCategoryMutation.isPending ? '...' : 'Simpan'}
               </button>
             </motion.div>
           ) : (
@@ -215,7 +201,7 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
                 className="w-full bg-slate-50 border-none rounded-3xl py-5 pl-12 pr-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-primary/10 transition-all appearance-none"
               >
                 <option value={0}>Pilih Kategori</option>
-                {categories.filter(c => c.type === type).map(cat => (
+                {categories.filter((c: any) => c.type === type).map((cat: any) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
@@ -232,7 +218,7 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
                 Belum ada Dompet di database. Buat "Cash" & "QRIS" di backend.
               </p>
             ) : (
-              wallets.map(w => (
+              wallets.map((w: any) => (
                 <button
                   key={w.id}
                   type="button"
@@ -266,11 +252,11 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
 
         <button 
           type="submit"
-          disabled={loading}
+          disabled={addTransactionMutation.isPending}
           className={`w-full py-6 rounded-[2rem] font-bold text-xl flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-95 mt-8 ${type === 'income' ? 'gradient-primary shadow-emerald-200' : 'bg-rose-500 text-white shadow-rose-200'} disabled:opacity-70`}
         >
-          {loading ? 'Menyimpan...' : `Simpan ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'}`}
-          {!loading && <Plus size={24} />}
+          {addTransactionMutation.isPending ? 'Menyimpan...' : `Simpan ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'}`}
+          {!addTransactionMutation.isPending && <Plus size={24} />}
         </button>
       </form>
     </div>

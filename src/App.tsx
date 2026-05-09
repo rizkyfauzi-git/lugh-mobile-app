@@ -10,66 +10,61 @@ import { StatusBar } from '@capacitor/status-bar';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { AddTransactionPage } from './pages/AddTransactionPage';
+import { useQuery } from '@tanstack/react-query';
+import { fetchProfile, fetchSummary, fetchTransactions } from './services/api';
 
 import logo from './assets/logo.png';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'login' | 'register' | 'add-transaction' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
-  const [user, setUser] = useState<any>(null);
-  const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [historyCategories, setHistoryCategories] = useState<string[]>(['All']);
+  const [activeHistoryFilter, setActiveHistoryFilter] = useState('All');
 
-  const fetchSummary = async (token: string) => {
-    try {
-      const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/transactions/summary', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSummary(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch summary', err);
-    }
-  };
+  // TanStack Query for User Profile
+  const { data: user, status: profileStatus } = useQuery({
+    queryKey: ['profile'],
+    queryFn: fetchProfile,
+    enabled: !!localStorage.getItem('token'),
+    retry: false,
+  });
 
-  const fetchProfile = async (token: string) => {
-    try {
-      const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/user/profile', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        fetchSummary(token); // Ambil data keuangan setelah profil didapat
-        setView('app');
-      } else {
-        localStorage.removeItem('token');
-        setView('login');
-      }
-    } catch (err) {
-      console.error('Failed to fetch profile', err);
+  const { data: allTransactions = [] } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: () => fetchTransactions(),
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (allTransactions.length > 0) {
+      const uniqueCats = Array.from(new Set(allTransactions.map((tx: any) => 
+        tx.category_name || (tx.type === 'income' ? 'Penjualan' : 'Operasional')
+      ))) as string[];
+      setHistoryCategories(['All', ...uniqueCats]);
     }
-  };
+  }, [allTransactions]);
+
+  // TanStack Query for Financial Summary
+  const { data: summary = { total_income: 0, total_expense: 0, balance: 0 } } = useQuery({
+    queryKey: ['summary'],
+    queryFn: fetchSummary,
+    enabled: !!user,
+  });
 
   useEffect(() => {
     StatusBar.show().catch(() => { });
     
-    // Auto-login if token exists
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchProfile(token);
+    if (localStorage.getItem('token') && profileStatus === 'success') {
+      setView('app');
+    } else if (localStorage.getItem('token') && profileStatus === 'error') {
+      localStorage.removeItem('token');
+      setView('login');
     }
-  }, []);
+  }, [profileStatus]);
 
   const handleLoginSuccess = (token: string) => {
     localStorage.setItem('token', token);
-    fetchProfile(token);
+    window.location.reload(); // Quick way to reset query client and state
   };
 
   if (view === 'landing') {
@@ -115,7 +110,7 @@ const App: React.FC = () => {
       case 'stats':
         return <StatsPage summary={summary} />;
       case 'history':
-        return <HistoryPage />;
+        return <HistoryPage activeFilter={activeHistoryFilter} />;
       case 'settings':
         return (
           <SettingsPage 
@@ -171,8 +166,23 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'history' && (
-          <div className="px-6 pt-4 pb-3">
-            <h2 className="text-xl font-bold font-heading text-slate-900 mb-2">Transaction History</h2>
+          <div className="px-6 pt-4 pb-4">
+            <h2 className="text-xl font-bold font-heading text-slate-900 mb-3">Transaction History</h2>
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {historyCategories.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveHistoryFilter(filter)}
+                  className={`px-5 py-2 rounded-full text-[10px] font-black whitespace-nowrap transition-all ${
+                    activeHistoryFilter === filter 
+                      ? 'bg-primary text-white shadow-lg shadow-emerald-100' 
+                      : 'bg-slate-50 text-slate-400 border border-slate-100'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
