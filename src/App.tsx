@@ -33,7 +33,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-slate-50 overflow-hidden flex flex-col safe-top mt-[30px]">
+    <div className="h-screen bg-slate-50 overflow-hidden flex flex-col safe-top mt-[25px]">
       {/* Fixed Top Section */}
       <div className="flex-none bg-white border-b border-slate-100 shadow-sm">
         {activeTab === 'home' && (
@@ -67,15 +67,14 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'history' && (
-          <div className="px-6 pt-6 pb-4">
-            <h2 className="text-xl font-bold font-heading text-slate-900 mb-4">Transaction History</h2>
+          <div className="px-6 pt-4 pb-3">
+            <h2 className="text-xl font-bold font-heading text-slate-900 mb-2">Transaction History</h2>
             <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
               {['All', 'Revenue', 'Inventory', 'Bills', 'Wages'].map((filter) => (
-                <button 
+                <button
                   key={filter}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap ${
-                    filter === 'All' ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 border border-slate-100'
-                  }`}
+                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap ${filter === 'All' ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 border border-slate-100'
+                    }`}
                 >
                   {filter}
                 </button>
@@ -85,16 +84,13 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div className="px-6 pt-6 pb-4">
-            <h2 className="text-xl font-bold font-heading text-slate-900 mb-4">Settings</h2>
-            {/* The Check Update functionality is inside SettingsPage, 
-                so we'll keep the update card there for logic simplicity or move it here. 
-                Let's move the heading only for now to test the "Fixed" feel. */}
+          <div className="px-6 pt-4 pb-3">
+            <h2 className="text-xl font-bold font-heading text-slate-900">Settings</h2>
           </div>
         )}
 
         {activeTab === 'stats' && (
-          <div className="px-6 pt-6 pb-4">
+          <div className="px-6 pt-4 pb-3">
             <h2 className="text-xl font-bold font-heading text-slate-900">Financial Stats</h2>
           </div>
         )}
