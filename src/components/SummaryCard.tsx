@@ -38,22 +38,19 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({ type, amount, label })
       ) : (
         <>
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <div className={`p-1.5 sm:p-2 rounded-xl ${isBalance ? 'bg-white/20' : 'bg-slate-100'}`}>
+            <div className="p-1.5 sm:p-2 rounded-xl bg-slate-100">
               {type === 'income' && <ArrowUpRight className="text-emerald-500" size={18} />}
               {type === 'expense' && <ArrowDownRight className="text-rose-500" size={18} />}
-              {type === 'balance' && <Wallet className="text-white" size={18} />}
             </div>
-            {!isBalance && (
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-400 bg-slate-50/50 px-2 py-0.5 rounded-full">
-                Month
-              </span>
-            )}
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 bg-slate-50/50 px-2 py-0.5 rounded-full">
+              Month
+            </span>
           </div>
           <div className="overflow-hidden">
-            <p className={`text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 truncate ${isBalance ? 'text-emerald-50/80' : 'text-slate-500'}`}>
+            <p className="text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 truncate text-slate-500">
               {label}
             </p>
-            <h3 className={`text-lg sm:text-2xl font-bold font-heading truncate ${isBalance ? 'text-white' : 'text-slate-900'}`}>
+            <h3 className="text-lg sm:text-2xl font-bold font-heading truncate text-slate-900">
               Rp {amount.toLocaleString('id-ID')}
             </h3>
           </div>
