@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ShoppingBag, Utensils, Zap, TrendingUp, TrendingDown, FileText } from 'lucide-react';
+import { ShoppingBag, Utensils, Zap, TrendingUp, TrendingDown, FileText, X, Clock, Wallet, Tag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Transaction {
   id: number;
@@ -13,13 +14,22 @@ interface Transaction {
 interface TransactionListProps {
   showHeading?: boolean;
   limit?: number;
+  isClickable?: boolean;
+  filterCategory?: string;
 }
 
-export const TransactionList: React.FC<TransactionListProps> = ({ showHeading = true, limit }) => {
+export const TransactionList: React.FC<TransactionListProps> = ({ 
+  showHeading = true, 
+  limit,
+  isClickable = false,
+  filterCategory = 'All'
+}) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   useEffect(() => {
+// ... existing fetch ...
     const fetchTransactions = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -28,6 +38,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({ showHeading = 
         });
         if (response.ok) {
           let data = await response.json();
+          
+          // Filter berdasarkan kategori yang dipilih
+          if (filterCategory !== 'All') {
+            data = data.filter((tx: any) => {
+              const txCat = tx.category_name || (tx.type === 'income' ? 'Penjualan' : 'Operasional');
+              return txCat === filterCategory;
+            });
+          }
+
           if (limit) data = data.slice(0, limit);
           setTransactions(data);
         }
@@ -78,14 +97,20 @@ export const TransactionList: React.FC<TransactionListProps> = ({ showHeading = 
             const date = new Date(tx.date);
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             
+            const ItemWrapper = isClickable ? 'button' : 'div';
+            
             return (
-              <div key={tx.id} className="glass p-3 sm:p-4 rounded-3xl flex items-center justify-between transition-transform active:scale-[0.98]">
+              <ItemWrapper 
+                key={tx.id} 
+                onClick={() => isClickable && setSelectedTx(tx)}
+                className={`w-full text-left glass p-3 sm:p-4 rounded-3xl flex items-center justify-between transition-transform ${isClickable ? 'active:scale-[0.98]' : ''}`}
+              >
                 <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                   <div className={`p-2 sm:p-3 rounded-2xl flex-shrink-0 ${color}`}>
                     <Icon size={18} />
                   </div>
                   <div className="overflow-hidden">
-                    <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate">{tx.description}</h4>
+                    <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate capitalize">{tx.description}</h4>
                     <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">
                       {tx.category_name || (tx.type === 'income' ? 'Penjualan' : 'Operasional')} • {timeStr}
                     </p>
@@ -100,11 +125,86 @@ export const TransactionList: React.FC<TransactionListProps> = ({ showHeading = 
                     <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">Success</span>
                   </div>
                 </div>
-              </div>
+              </ItemWrapper>
             );
           })
         )}
       </div>
+
+      {/* Transaction Detail Modal */}
+      <AnimatePresence>
+        {selectedTx && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedTx(null)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100]"
+            />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] p-8 z-[101] shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-black font-heading text-slate-900">Transaction Detail</h3>
+                <button onClick={() => setSelectedTx(null)} className="p-2 rounded-xl bg-slate-50 text-slate-400">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center mb-8">
+                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-4 ${getIcon(selectedTx.type, selectedTx.description).color}`}>
+                  {React.createElement(getIcon(selectedTx.type, selectedTx.description).icon, { size: 32 })}
+                </div>
+                <h2 className={`text-3xl font-black ${selectedTx.type === 'income' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                  {selectedTx.type === 'income' ? '+' : '-'}{selectedTx.amount.toLocaleString('id-ID')}
+                </h2>
+                <p className="text-sm font-bold text-slate-400 mt-1 capitalize">{selectedTx.description}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <Clock size={18} className="text-slate-400" />
+                    <span className="text-xs font-bold text-slate-500">Time & Date</span>
+                  </div>
+                  <span className="text-xs font-black text-slate-900">
+                    {new Date(selectedTx.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <Tag size={18} className="text-slate-400" />
+                    <span className="text-xs font-bold text-slate-500">Category</span>
+                  </div>
+                  <span className="text-xs font-black text-slate-900">
+                    {selectedTx.category_name || (selectedTx.type === 'income' ? 'Penjualan' : 'Operasional')}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <Wallet size={18} className="text-slate-400" />
+                    <span className="text-xs font-bold text-slate-500">Payment Method</span>
+                  </div>
+                  <span className="text-xs font-black text-slate-900 uppercase">Cash</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setSelectedTx(null)}
+                className="w-full mt-8 py-5 rounded-[2rem] bg-slate-900 text-white font-bold text-sm shadow-xl active:scale-95 transition-transform"
+              >
+                Close Details
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

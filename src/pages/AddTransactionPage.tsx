@@ -78,6 +78,16 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
     }
   };
 
+  const formatNumber = (val: string) => {
+    if (!val) return '';
+    const num = val.replace(/\D/g, '');
+    return new Intl.NumberFormat('id-ID').format(parseInt(num));
+  };
+
+  const parseNumber = (val: string) => {
+    return val.replace(/\D/g, '');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -91,8 +101,9 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          amount: parseInt(amount),
+          amount: parseInt(parseNumber(amount)),
           type,
+// ... rest of the code ...
           description,
           category_id: categoryId || (categories.find(c => c.type === type)?.id || 1),
           wallet_id: walletId || (wallets[0]?.id || 1),
@@ -147,9 +158,10 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
           <div className="relative">
             <div className={`absolute left-0 top-1/2 -translate-y-1/2 font-black text-3xl transition-colors ${type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>Rp</div>
             <input 
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setAmount(formatNumber(e.target.value))}
               className="w-full bg-transparent border-b-2 border-slate-100 py-6 pl-14 pr-4 text-4xl font-black text-slate-900 focus:outline-none focus:border-primary transition-all"
               placeholder="0"
               required
