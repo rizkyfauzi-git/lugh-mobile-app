@@ -35,15 +35,16 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
       if (catRes.ok) setCategories(await catRes.json());
       if (wallRes.ok) {
         const allWallets = await wallRes.json();
-        const filtered = allWallets.filter((w: any) => 
-          w.name.toLowerCase().includes('cash') || w.name.toLowerCase().includes('qris')
-        );
         
-        // Jika hasil filter kosong, tampilkan semua dompet yang ada
-        const finalWallets = filtered.length > 0 ? filtered : allWallets;
+        // Pastikan urutan Cash dulu baru QRIS (atau sebaliknya) agar rapi
+        const prioritized = allWallets.filter((w: any) => 
+          w.name.toLowerCase() === 'cash' || w.name.toLowerCase() === 'qris'
+        ).sort((a: any, b: any) => a.name.localeCompare(b.name));
+        
+        // Jika karena alasan tertentu (user lama) belum ada Cash/QRIS, tampilkan semua
+        const finalWallets = prioritized.length > 0 ? prioritized : allWallets;
         setWallets(finalWallets);
         
-        // Pilih dompet pertama secara otomatis
         if (finalWallets.length > 0) {
           setWalletId(finalWallets[0].id);
         }
