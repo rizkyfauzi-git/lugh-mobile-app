@@ -16,11 +16,43 @@ import logo from './assets/logo.png';
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'login' | 'register' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
+  const [user, setUser] = useState<any>(null);
+
+  const fetchProfile = async (token: string) => {
+    try {
+      const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/user/profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setView('app');
+      } else {
+        localStorage.removeItem('token');
+        setView('login');
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile', err);
+    }
+  };
 
   useEffect(() => {
-    // Show status bar for standard experience and to prevent layout jumps
     StatusBar.show().catch(() => { });
+    
+    // Auto-login if token exists
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchProfile(token);
+    }
   }, []);
+
+  const handleLoginSuccess = (token: string) => {
+    localStorage.setItem('token', token);
+    fetchProfile(token);
+  };
 
   if (view === 'landing') {
     return <LandingPage onGetStarted={() => setView('login')} />;
@@ -29,7 +61,7 @@ const App: React.FC = () => {
   if (view === 'login') {
     return (
       <LoginPage 
-        onLogin={() => setView('app')} 
+        onLogin={handleLoginSuccess} 
         onGoToRegister={() => setView('register')} 
       />
     );
@@ -53,7 +85,15 @@ const App: React.FC = () => {
       case 'history':
         return <HistoryPage />;
       case 'settings':
-        return <SettingsPage />;
+        return (
+          <SettingsPage 
+            onLogout={() => {
+              localStorage.removeItem('token');
+              setUser(null);
+              setView('login');
+            }} 
+          />
+        );
       default:
         return <TransactionList showHeading={false} />;
     }
@@ -72,7 +112,9 @@ const App: React.FC = () => {
                   <img src={logo} alt="Lugh Finance Logo" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold font-heading text-slate-900 tracking-tight">Lugh Finance</h1>
+                  <h1 className="text-xl font-bold font-heading text-slate-900 tracking-tight">
+                    {user ? `Halo, ${user.username}` : 'Lugh Finance'}
+                  </h1>
                 </div>
               </div>
               <div className="flex gap-2">

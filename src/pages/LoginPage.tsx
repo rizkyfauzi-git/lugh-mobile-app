@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, LogIn } from 'lucide-react';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (token: string) => void;
   onGoToRegister: () => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,17 +26,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToRegister })
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // Simpan token jika backend Anda mengirim JWT token
-        localStorage.setItem('token', data.token);
-        onLogin();
+        onLogin(data.token);
       } else {
-        setError(data.message || 'Email atau PIN salah');
+        setError(data.error || data.message || 'Email atau PIN salah');
       }
     } catch (err) {
       setError('Gagal terhubung ke server Go (Pastikan CORS aktif)');
@@ -73,17 +71,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToRegister })
         className="space-y-6"
       >
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
           <div className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
               <Mail size={20} />
             </div>
             <input 
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-white border border-slate-100 rounded-3xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all"
-              placeholder="name@warteg.com"
+              placeholder="rizkyfauzi"
               required
             />
           </div>

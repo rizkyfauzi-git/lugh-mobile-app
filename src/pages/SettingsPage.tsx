@@ -10,7 +10,11 @@ const menuItems = [
   { icon: CircleHelp, label: 'Help Center', sub: 'Contact support' },
 ];
 
-export const SettingsPage: React.FC = () => {
+interface SettingsPageProps {
+  onLogout: () => void;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
   const [checking, setChecking] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -153,10 +157,15 @@ export const SettingsPage: React.FC = () => {
           </button>
         ))}
 
-        <button className="w-full p-4 rounded-3xl flex items-center justify-center gap-2 text-rose-500 font-bold text-sm mt-8 border border-rose-100 bg-rose-50/30">
-          <LogOut size={18} />
-          Logout Account
-        </button>
+        <div className="mt-8 mb-10">
+          <button 
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-3 p-5 rounded-3xl bg-red-50 text-red-600 font-bold border border-red-100 active:scale-95 transition-transform"
+          >
+            <LogOut size={20} />
+            Log Out Account
+          </button>
+        </div>
       </div>
 
       <div className="mt-12 text-center">

@@ -8,7 +8,7 @@ interface RegisterPageProps {
 }
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onRegisterSuccess }) => {
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onReg
       const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ username, email, password })
       });
 
       const data = await response.json();
@@ -77,17 +77,17 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onReg
         className="space-y-6 pb-10"
       >
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
           <div className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
               <User size={20} />
             </div>
             <input 
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-white border border-slate-100 rounded-3xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all"
-              placeholder="Rizky Fauzi"
+              placeholder="rizkyfauzi"
               required
             />
           </div>
