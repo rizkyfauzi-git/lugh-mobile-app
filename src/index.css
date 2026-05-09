@@ -11,7 +11,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden w-screen;
+    @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden w-screen overscroll-none;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
   html {

@@ -8,13 +8,19 @@ const transactions = [
   { id: 4, title: 'Penjualan Malam', category: 'Revenue', amount: 850000, time: '09:00 PM', icon: Utensils, color: 'bg-emerald-100 text-emerald-600' },
 ];
 
-export const TransactionList: React.FC = () => {
+interface TransactionListProps {
+  showHeading?: boolean;
+}
+
+export const TransactionList: React.FC<TransactionListProps> = ({ showHeading = true }) => {
   return (
-    <div className="mt-8 mb-24">
-      <div className="flex justify-between items-center mb-4 px-1">
-        <h2 className="text-lg font-bold font-heading text-slate-800">Recent Activity</h2>
-        <button className="text-sm font-semibold text-primary">See All</button>
-      </div>
+    <div className="mt-4 pb-32">
+      {showHeading && (
+        <div className="flex justify-between items-center mb-4 px-1">
+          <h2 className="text-lg font-bold font-heading text-slate-800">Recent Activity</h2>
+          <button className="text-sm font-semibold text-primary">See All</button>
+        </div>
+      )}
       
       <div className="space-y-3">
         {transactions.map((tx) => (
