@@ -33,7 +33,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-slate-50 overflow-hidden flex flex-col">
+    <div className="h-screen bg-slate-50 overflow-hidden flex flex-col safe-top">
       {/* Fixed Top Section */}
       <div className="flex-none bg-white">
         {activeTab === 'home' && (
