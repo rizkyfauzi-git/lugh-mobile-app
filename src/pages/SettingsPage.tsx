@@ -11,7 +11,7 @@ const menuItems = [
 
 export const SettingsPage: React.FC = () => {
   const [checking, setChecking] = useState(false);
-  const currentVersion = '1.0.0';
+  const currentFullVersion = `v${__APP_VERSION__}-${__BUILD_NUMBER__}`;
 
   const checkUpdate = async () => {
     setChecking(true);
@@ -20,15 +20,15 @@ export const SettingsPage: React.FC = () => {
       const data = await response.json();
       
       if (data.tag_name) {
-        const latestVersion = data.tag_name.replace('v', '').split('-')[0];
+        const latestFullVersion = data.tag_name; // e.g. v1.0.0-5
         
-        if (latestVersion !== currentVersion) {
+        if (latestFullVersion !== currentFullVersion) {
           const downloadUrl = data.assets[0]?.browser_download_url;
-          if (downloadUrl && confirm(`New version v${latestVersion} is available! Download now?`)) {
+          if (downloadUrl && confirm(`New update ${latestFullVersion} is available! Download now?`)) {
             await Browser.open({ url: downloadUrl });
           }
         } else {
-          alert('You are already using the latest version.');
+          alert('You are already using the latest build.');
         }
       }
     } catch (error) {
@@ -54,7 +54,7 @@ export const SettingsPage: React.FC = () => {
             </div>
             <div className="text-left">
               <p className="text-sm font-bold text-slate-900">Check for Update</p>
-              <p className="text-[10px] font-medium text-emerald-600">Current v{currentVersion}</p>
+              <p className="text-[10px] font-medium text-emerald-600">Current {currentFullVersion}</p>
             </div>
           </div>
           <ChevronRight size={18} className="text-slate-300" />
@@ -82,7 +82,7 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       <div className="mt-12 text-center">
-        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Lugh Finance v1.0.0</p>
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Lugh Finance {currentFullVersion}</p>
       </div>
     </div>
   );
