@@ -35,7 +35,7 @@ const App: React.FC = () => {
   return (
     <div className="h-screen bg-slate-50 overflow-hidden flex flex-col">
       {/* Fixed Top Section - Now includes safe-top and white background */}
-      <div className="flex-none bg-white border-b border-slate-100 shadow-sm safe-top pt-[25px]">
+      <div className="flex-none bg-white border-b border-slate-100 shadow-sm safe-top pt-[35px]">
         {activeTab === 'home' && (
           <>
             {/* Header - Only on Home */}
