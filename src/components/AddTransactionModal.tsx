@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Wallet, Tag, AlignLeft, Calendar } from 'lucide-react';
+import { X, Plus, Wallet, Tag, AlignLeft } from 'lucide-react';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
