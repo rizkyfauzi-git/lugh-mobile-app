@@ -43,6 +43,20 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Ensure Persistent Keystore
+        run: |
+          if [ ! -f android/app/debug.keystore ]; then
+            echo "Generating new persistent keystore..."
+            keytool -genkey -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug, O=Android, C=US"
+            git config --global user.name "github-actions"
+            git config --global user.email "github-actions@github.com"
+            git add android/app/debug.keystore
+            git commit -m "chore: add persistent debug keystore for consistent signing"
+            git push
+          else
+            echo "Using existing keystore."
+          fi
+
       - name: Build Android APK
         run: |
           cd android
