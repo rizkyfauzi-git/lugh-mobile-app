@@ -13,8 +13,8 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
 
   useEffect(() => {
-    // Hide status bar for immersive experience
-    StatusBar.hide().catch(() => {});
+    // Show status bar for standard experience and to prevent layout jumps
+    StatusBar.show().catch(() => {});
   }, []);
 
   const renderPage = () => {
@@ -39,7 +39,7 @@ const App: React.FC = () => {
         {activeTab === 'home' && (
           <>
             {/* Header - Only on Home */}
-            <header className="px-6 pt-8 pb-4 flex justify-between items-center border-b border-slate-100 shadow-sm">
+            <header className="px-6 pt-4 pb-4 flex justify-between items-center border-b border-slate-100 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-emerald-100 border border-emerald-50">
                   <img src={logo} alt="Lugh Finance Logo" className="w-full h-full object-cover" />
