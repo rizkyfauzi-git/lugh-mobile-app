@@ -107,6 +107,8 @@ const App: React.FC = () => {
       />
     );
   }
+
+  const renderPage = () => {
     switch (activeTab) {
       case 'home':
         return <TransactionList showHeading={false} />;
