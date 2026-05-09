@@ -35,10 +35,18 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
       if (catRes.ok) setCategories(await catRes.json());
       if (wallRes.ok) {
         const allWallets = await wallRes.json();
-        // Filter hanya Cash dan QRIS
-        setWallets(allWallets.filter((w: any) => 
-          w.name.toLowerCase() === 'cash' || w.name.toLowerCase() === 'qris'
-        ));
+        const filtered = allWallets.filter((w: any) => 
+          w.name.toLowerCase().includes('cash') || w.name.toLowerCase().includes('qris')
+        );
+        
+        // Jika hasil filter kosong, tampilkan semua dompet yang ada
+        const finalWallets = filtered.length > 0 ? filtered : allWallets;
+        setWallets(finalWallets);
+        
+        // Pilih dompet pertama secara otomatis
+        if (finalWallets.length > 0) {
+          setWalletId(finalWallets[0].id);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch data', err);
@@ -206,17 +214,23 @@ export const AddTransactionPage: React.FC<AddTransactionPageProps> = ({ onBack, 
         <div className="space-y-3">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Metode Pembayaran</label>
           <div className="grid grid-cols-2 gap-4">
-            {wallets.map(w => (
-              <button
-                key={w.id}
-                type="button"
-                onClick={() => setWalletId(w.id)}
-                className={`py-5 rounded-3xl border-2 flex flex-col items-center gap-2 transition-all ${walletId === w.id ? 'border-primary bg-primary/5 text-primary' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
-              >
-                <Wallet size={24} />
-                <span className="text-sm font-black uppercase tracking-widest">{w.name}</span>
-              </button>
-            ))}
+            {wallets.length === 0 ? (
+              <p className="col-span-2 text-xs font-medium text-rose-400 p-4 bg-rose-50 rounded-2xl">
+                Belum ada Dompet di database. Buat "Cash" & "QRIS" di backend.
+              </p>
+            ) : (
+              wallets.map(w => (
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => setWalletId(w.id)}
+                  className={`py-5 rounded-3xl border-2 flex flex-col items-center gap-2 transition-all ${walletId === w.id ? 'border-primary bg-primary/5 text-primary' : 'border-slate-50 bg-slate-50 text-slate-400'}`}
+                >
+                  <Wallet size={24} />
+                  <span className="text-sm font-black uppercase tracking-widest">{w.name}</span>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
