@@ -9,11 +9,12 @@ import { StatusBar } from '@capacitor/status-bar';
 
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 
 import logo from './assets/logo.png';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'landing' | 'login' | 'app'>('landing');
+  const [view, setView] = useState<'landing' | 'login' | 'register' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
 
   useEffect(() => {
@@ -26,7 +27,21 @@ const App: React.FC = () => {
   }
 
   if (view === 'login') {
-    return <LoginPage onLogin={() => setView('app')} />;
+    return (
+      <LoginPage 
+        onLogin={() => setView('app')} 
+        onGoToRegister={() => setView('register')} 
+      />
+    );
+  }
+
+  if (view === 'register') {
+    return (
+      <RegisterPage 
+        onBackToLogin={() => setView('login')} 
+        onRegisterSuccess={() => setView('login')} 
+      />
+    );
   }
 
   const renderPage = () => {
