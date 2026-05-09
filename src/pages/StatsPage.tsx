@@ -11,11 +11,27 @@ const data = [
   { name: 'Sun', total: 3490 },
 ];
 
-export const StatsPage: React.FC = () => {
+interface StatsPageProps {
+  summary: { total_income: number; total_expense: number; balance: number };
+}
+
+export const StatsPage: React.FC<StatsPageProps> = ({ summary }) => {
   return (
     <div className="p-6 pt-4">
-      <div className="glass p-4 rounded-3xl mb-6 h-64">
-        <h3 className="text-sm font-bold text-slate-500 mb-4">Weekly Revenue</h3>
+      {/* Real Summary Cards moved from Home */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="p-5 rounded-[2rem] bg-emerald-50 border border-emerald-100 shadow-sm shadow-emerald-50/50 transition-transform active:scale-95">
+          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Total Pemasukan</p>
+          <p className="text-lg font-black text-emerald-700">Rp {summary.total_income.toLocaleString('id-ID')}</p>
+        </div>
+        <div className="p-5 rounded-[2rem] bg-rose-50 border border-rose-100 shadow-sm shadow-rose-50/50 transition-transform active:scale-95">
+          <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest mb-1">Total Pengeluaran</p>
+          <p className="text-lg font-black text-rose-700">Rp {summary.total_expense.toLocaleString('id-ID')}</p>
+        </div>
+      </div>
+
+      <div className="glass p-4 rounded-[2rem] mb-6 h-64">
+        <h3 className="text-sm font-bold text-slate-500 mb-4 px-2">Weekly Performance</h3>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

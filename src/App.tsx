@@ -10,6 +10,7 @@ import { StatusBar } from '@capacitor/status-bar';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { AddTransactionModal } from './components/AddTransactionModal';
 
 import logo from './assets/logo.png';
 
@@ -17,6 +18,22 @@ const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'login' | 'register' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
   const [user, setUser] = useState<any>(null);
+  const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const fetchSummary = async (token: string) => {
+    try {
+      const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/transactions/summary', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSummary(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch summary', err);
+    }
+  };
 
   const fetchProfile = async (token: string) => {
     try {
@@ -29,6 +46,7 @@ const App: React.FC = () => {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+        fetchSummary(token); // Ambil data keuangan setelah profil didapat
         setView('app');
       } else {
         localStorage.removeItem('token');
@@ -81,7 +99,7 @@ const App: React.FC = () => {
       case 'home':
         return <TransactionList showHeading={false} />;
       case 'stats':
-        return <StatsPage />;
+        return <StatsPage summary={summary} />;
       case 'history':
         return <HistoryPage />;
       case 'settings':
@@ -126,7 +144,10 @@ const App: React.FC = () => {
             </header>
 
             <div className="px-6 pb-4">
-              <SummaryCard type="balance" amount={12450000} label="Current Balance" />
+              <SummaryCard type="balance" amount={summary.balance} label="Total Saldo Warteg" />
+              
+
+
               <div className="flex justify-between items-center mt-6">
                 <h2 className="text-lg font-bold font-heading text-slate-800">Recent Activity</h2>
                 <button className="text-sm font-semibold text-primary" onClick={() => setActiveTab('history')}>See All</button>
@@ -171,7 +192,27 @@ const App: React.FC = () => {
       </main>
 
       {/* Navigation */}
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav 
+        activeTab={activeTab} 
+        onTabChange={(tab) => {
+          if (tab === 'add') {
+            setIsAddModalOpen(true);
+          } else {
+            setActiveTab(tab);
+          }
+        }} 
+      />
+
+      <AddTransactionModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          const token = localStorage.getItem('token');
+          if (token) fetchSummary(token);
+          // Refresh current page if it's transaction list
+          setActiveTab('home');
+        }}
+      />
     </div>
   );
 };
