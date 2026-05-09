@@ -1,6 +1,6 @@
 const BASE_URL = 'https://lugh-mobile-backend-v1.vercel.app/api';
 
-export const getAuthHeader = () => {
+export const getAuthHeader = (): Record<string, string> => {
   const token = localStorage.getItem('token');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
