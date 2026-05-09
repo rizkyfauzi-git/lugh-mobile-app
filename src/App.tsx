@@ -140,7 +140,7 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold font-heading text-slate-900 tracking-tight">
-                    {user ? `Halo, ${user.username}` : 'Lugh Finance'}
+                    {user?.username ? `Halo, ${user.username.charAt(0).toUpperCase() + user.username.slice(1)}` : 'Lugh Finance'}
                   </h1>
                 </div>
               </div>

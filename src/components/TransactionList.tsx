@@ -93,7 +93,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   </div>
                   <div className="overflow-hidden">
                     <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate capitalize">{tx.description}</h4>
-                    <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">
+                    <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate capitalize">
                       {tx.category_name || (tx.type === 'income' ? 'Penjualan' : 'Operasional')} • {timeStr}
                     </p>
                   </div>

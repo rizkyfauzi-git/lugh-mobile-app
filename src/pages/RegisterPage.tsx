@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, UserPlus, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, UserPlus, ArrowLeft, Phone, CreditCard } from 'lucide-react';
 
 interface RegisterPageProps {
   onBackToLogin: () => void;
@@ -11,6 +11,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onReg
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,7 +25,13 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onReg
       const response = await fetch('https://lugh-mobile-backend-v1.vercel.app/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({ 
+          username, 
+          email, 
+          password,
+          full_name: fullName,
+          phone: phone
+        })
       });
 
       const data = await response.json();
@@ -74,8 +82,42 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onBackToLogin, onReg
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
         onSubmit={handleSubmit}
-        className="space-y-6 pb-10"
+        className="space-y-6 pb-20"
       >
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <CreditCard size={20} />
+            </div>
+            <input 
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full bg-white border border-slate-100 rounded-3xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all"
+              placeholder="Rizky Fauzi"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <Phone size={20} />
+            </div>
+            <input 
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full bg-white border border-slate-100 rounded-3xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all"
+              placeholder="08123456789"
+              required
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
           <div className="relative group">
