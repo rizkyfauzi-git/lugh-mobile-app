@@ -7,7 +7,7 @@ interface LoginPageProps {
   onGoToRegister: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -116,6 +116,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div className="flex justify-end">
           <button type="button" className="text-xs font-bold text-primary hover:underline">Forgot PIN?</button>
         </div>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold text-center"
+          >
+            {error}
+          </motion.div>
+        )}
 
         <button 
           type="submit"
