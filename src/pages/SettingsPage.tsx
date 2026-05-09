@@ -48,8 +48,6 @@ export const SettingsPage: React.FC = () => {
     try {
       const fileName = `LughFinance_${version}.apk`;
       
-      // We use a listener-based approach for progress if possible, 
-      // but for simplicity with Filesystem.downloadFile in standard Capacitor:
       const downloadResult = await Filesystem.downloadFile({
         url: url,
         path: fileName,
@@ -59,22 +57,30 @@ export const SettingsPage: React.FC = () => {
 
       if (downloadResult.path) {
         setProgress(100);
-        // Small delay to show 100%
+        // Change status to Installing
+        const installPath = downloadResult.path;
+        
+        // Brief pause to show 100%
         setTimeout(async () => {
           try {
+            // Provide feedback that we are launching the installer
+            alert(`Download complete! Click OK to start installation. The app will restart after the update.`);
+            
             await FileOpener.open({
-              filePath: downloadResult.path!,
+              filePath: installPath!,
               contentType: 'application/vnd.android.package-archive'
             });
           } catch (e) {
-            alert('Failed to open installer. Please find the APK in your downloads.');
+            alert('Failed to open installer. Please find the APK in your Internal Storage > Android > data > [package_name] > files');
           }
           setDownloading(false);
+          setProgress(0);
         }, 500);
       }
     } catch (error) {
       alert('Download failed. Please check your connection.');
       setDownloading(false);
+      setProgress(0);
     }
   };
 
@@ -88,13 +94,24 @@ export const SettingsPage: React.FC = () => {
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-2xl bg-white text-emerald-600 shadow-sm">
-                {downloading ? <Download size={20} className="animate-bounce" /> : <RefreshCw size={20} className={checking ? 'animate-spin' : ''} />}
+                {downloading ? (
+                  <div className="relative">
+                    <Download size={20} className={progress < 100 ? 'animate-bounce' : ''} />
+                    {progress === 100 && <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>}
+                  </div>
+                ) : (
+                  <RefreshCw size={20} className={checking ? 'animate-spin' : ''} />
+                )}
               </div>
               <div className="text-left">
                 <p className="text-sm font-bold text-slate-900">
-                  {downloading ? 'Downloading Update...' : 'Check for Update'}
+                  {downloading 
+                    ? (progress === 100 ? 'Ready to Install' : 'Downloading Update...') 
+                    : 'Check for Update'}
                 </p>
-                <p className="text-[10px] font-medium text-emerald-600">Current {currentFullVersion}</p>
+                <p className="text-[10px] font-medium text-emerald-600">
+                  {downloading ? (progress === 100 ? 'Click OK to continue' : `${progress || 10}% downloaded`) : `Current ${currentFullVersion}`}
+                </p>
               </div>
             </div>
             {!downloading && (
@@ -112,12 +129,12 @@ export const SettingsPage: React.FC = () => {
             <div className="mt-4 relative z-10">
               <div className="w-full bg-emerald-200/50 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-emerald-500 h-full transition-all duration-300"
-                  style={{ width: `${progress || 10}%` }} // Default 10% for feedback if progress is indeterminate
+                  className={`h-full transition-all duration-500 ${progress === 100 ? 'bg-blue-500' : 'bg-emerald-500'}`}
+                  style={{ width: `${progress || 10}%` }}
                 ></div>
               </div>
-              <p className="text-[9px] font-bold text-emerald-700 mt-2 text-right uppercase tracking-wider">
-                {progress > 0 ? `${progress}% Completed` : 'Connecting...'}
+              <p className={`text-[9px] font-bold mt-2 text-right uppercase tracking-wider ${progress === 100 ? 'text-blue-600' : 'text-emerald-700'}`}>
+                {progress === 100 ? 'Download Success' : 'Downloading...'}
               </p>
             </div>
           )}
