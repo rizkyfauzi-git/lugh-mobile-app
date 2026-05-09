@@ -41,8 +41,10 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: lugh-finance-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION-${{ github.run_number }}"
+          gh release create $TAG android/app/build/outputs/apk/debug/app-debug.apk --title "Lugh Finance $TAG" --notes "Automated build for version $VERSION. Download the APK below to update."
