@@ -7,15 +7,27 @@ import { HistoryPage } from './pages/HistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { StatusBar } from '@capacitor/status-bar';
 
+import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
+
 import logo from './assets/logo.png';
 
 const App: React.FC = () => {
+  const [view, setView] = useState<'landing' | 'login' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState('home');
 
   useEffect(() => {
     // Show status bar for standard experience and to prevent layout jumps
     StatusBar.show().catch(() => { });
   }, []);
+
+  if (view === 'landing') {
+    return <LandingPage onGetStarted={() => setView('login')} />;
+  }
+
+  if (view === 'login') {
+    return <LoginPage onLogin={() => setView('app')} />;
+  }
 
   const renderPage = () => {
     switch (activeTab) {
@@ -35,11 +47,11 @@ const App: React.FC = () => {
   return (
     <div className="h-screen bg-slate-50 overflow-hidden flex flex-col">
       {/* Fixed Top Section - Now includes safe-top and white background */}
-      <div className="flex-none bg-white border-b border-slate-100 shadow-sm safe-top pt-[45px]">
+      <div className="flex-none bg-white border-b border-slate-100 shadow-sm safe-top ">
         {activeTab === 'home' && (
           <>
             {/* Header - Only on Home */}
-            <header className="px-6 pt-4 pb-4 flex justify-between items-center">
+            <header className="px-6 pt-4 pb-4 flex justify-between items-center mt-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-emerald-100 border border-emerald-50">
                   <img src={logo} alt="Lugh Finance Logo" className="w-full h-full object-cover" />
