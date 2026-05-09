@@ -88,7 +88,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToRegister })
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Secret PIN</label>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Password</label>
           <div className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
               <Lock size={20} />
@@ -112,7 +112,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToRegister })
         </div>
 
         <div className="flex justify-end">
-          <button type="button" className="text-xs font-bold text-primary hover:underline">Forgot PIN?</button>
+          <button type="button" className="text-xs font-bold text-primary hover:underline">Forgot Password?</button>
         </div>
 
         {error && (
